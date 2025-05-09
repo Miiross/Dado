@@ -26,19 +26,6 @@
                 </Picker.ItemsSource>
             </Picker>
 
-            <Picker
-                x:Name="SelecaoPickerY"
-                Title="Escolha entre 1 até 3 ou 4 até 6">
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String x:Name="UmTres">1>3</x:String>
-                        <x:String x:Name="QuatroSeis">4>6</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
-
-
-
             <Button
                 x:Name="RollButton"
                 Text="Jogar dado (Normal)" 
