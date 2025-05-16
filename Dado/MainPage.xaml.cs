@@ -36,6 +36,7 @@ namespace Dado
             NumeroEscolhidoPicker.SelectedIndex = 0;
         }
 
+<<<<<<< HEAD
         private async void RolarButton_Clicked(object sender, EventArgs e)
         {
             if (dado == null || NumeroEscolhidoPicker.SelectedIndex == -1) return;
@@ -50,10 +51,16 @@ namespace Dado
 
             int jogador = dado.Jogar();
             int computador = dado.Jogar();
+=======
+        private async void RollButtonY_Clicked(object sender, EventArgs e)
+        { 
+            await AnimarDado();
+>>>>>>> 95eb3f0e0b1f199935148eac6ee32c8dec272b8c
 
             string status;
             bool venceu = false;
 
+<<<<<<< HEAD
             if (jogador < corte)
             {
                 await DisplayAlert($"Você perdeu!","O numero tirado é menor que o de corte", "Ok");
@@ -91,6 +98,43 @@ namespace Dado
             VitoriasLabel.Text = $"Vitórias: {vitorias}";
             SequenciaLabel.Text = $"Sequência: {sequencia}";
             SomaOpostosLabel.Text = $"Soma dos lados opostos: {somaOpostos}/{limite}";
+=======
+            if (resultado <= 3)
+            {
+                await DisplayAlert("Boa", "voce acertou!", "ok");
+            }
+            else
+            {
+                await DisplayAlert("Ixi", "voce errou!", "ok");
+            }
+        }
+
+        private async void RollButtonX_Clicked(object sender, EventArgs e)
+        {
+            await AnimarDado();
+
+            int resultado = meuDado.Jogar();
+            dadoImagem.Source = meuDado.GetImagem(resultado);
+
+            if (resultado >= 4)
+            {
+                await DisplayAlert("Boa", "voce acertou!", "ok");
+            }
+            else
+            {
+                await DisplayAlert("Ixi", "voce errou!", "ok");
+            }
+        }
+
+        private async Task AnimarDado()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                int numeroAleatorio = new Random().Next(1, 7);
+                dadoImagem.Source = $"dado{numeroAleatorio}.png";
+                await Task.Delay(80);
+            }
+>>>>>>> 95eb3f0e0b1f199935148eac6ee32c8dec272b8c
         }
     }
 }
