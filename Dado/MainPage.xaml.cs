@@ -1,109 +1,96 @@
-﻿namespace Dado
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+
+namespace Dado
 {
     public partial class MainPage : ContentPage
     {
-        private Dado meuDado = new Dado();
+        Dado dado;
+        int vitorias = 0;
+        int sequencia = 0;
+        int somaOpostos = 0;
+        int? ultimoCorte = null;
+
+        Dictionary<string, int> limites = new()
+        {
+            {"D6", 30}, {"D8", 40}, {"D10", 50}, {"D12", 60}, {"D16", 70}, {"D20", 100}
+        };
 
         public MainPage()
         {
             InitializeComponent();
         }
-        private async void RollButton_Clicked(object sender, EventArgs e)
+
+        private void TipoDadoPicker(object sender, EventArgs e)
         {
-            if (SelecaoPicker.SelectedIndex == -1)
+            string tipo = DadoPicker.SelectedItem.ToString();
+            int lados = int.Parse(tipo.Substring(1));
+            dado = new Dado(lados);
+
+            NumeroEscolhidoPicker.Items.Clear();
+            for (int i = 1; i <= lados; i++)
             {
-                await DisplayAlert("Aviso", "Escolha um número antes de rolar!", "Ok");
-                return;
+                NumeroEscolhidoPicker.Items.Add(i.ToString());
             }
-
-            await AnimarDado();
-
-            int resultado = meuDado.Jogar();
-            dadoImagem.Source = meuDado.GetImagem(resultado);
-
-            int escolha = int.Parse(SelecaoPicker.SelectedItem.ToString());
-
-            if (escolha == resultado)
-            {
-                await DisplayAlert("Parabéns", "Você acertou!", "Ok");
-
-            }
-            else
-            {
-                await DisplayAlert("Tente novamente", $"Você escolheu {escolha}, mas saiu {resultado}.", "Ok");
-            }
+            NumeroEscolhidoPicker.SelectedIndex = 0;
         }
 
-        private async void RollButtonY_Clicked(object sender, EventArgs e)
+        private async void RolarButton_Clicked(object sender, EventArgs e)
         {
-            if (SelecaoPicker.SelectedIndex == -1)
+            if (dado == null || NumeroEscolhidoPicker.SelectedIndex == -1) return;
+
+            int corte = int.Parse(NumeroEscolhidoPicker.SelectedItem.ToString());
+            if (ultimoCorte.HasValue && corte == ultimoCorte.Value)
             {
-                await DisplayAlert("Aviso", "Escolha uma opção antes de jogar", "Ok");
+                await DisplayAlert("Erro", "O número de corte não pode se repetir!", "Ok");
                 return;
             }
+            ultimoCorte = corte;
 
-            await AnimarDado();
+            int jogador = dado.Jogar();
+            int computador = dado.Jogar();
 
-            int resultado = meuDado.Jogar();
-            dadoImagem.Source = meuDado.GetImagem(resultado);
+            string status;
+            bool venceu = false;
 
-            string ResultadoY;
-            if (resultado <= 3)
+            if (jogador < corte)
             {
-                ResultadoY = "1>3";
+                await DisplayAlert($"Você perdeu!","O numero tirado é menor que o de corte", "Ok");
+                status = $"Você tirou {jogador}, que é menor que o corte {corte}. Perdeu!";
+                sequencia = 0;
+            }
+            else if (computador >= jogador)
+            {
+                await DisplayAlert($"Você perdeu!", "Computador tirou um numero igual ou maior", "Ok");
+                status = $"Você tirou {jogador}, o computador tirou {computador}. Perdeu!";
+                sequencia = 0;
             }
             else
             {
-                ResultadoY = "4>6";
+                await DisplayAlert($"Você ganhou!", "O numero tirado é igual ou maior que o de corte", "Ok");
+                status = $"Você tirou {jogador}, o computador tirou {computador}. Você ganhou!";
+                vitorias++;
+                sequencia++;
+                venceu = true;
             }
+            //Meio que virou um jogo de quem tira o numero mais alto não?
 
-            int escolha = int.Parse(SelecaoPicker.SelectedItem.ToString());
+            int soma = dado.GetLadoOposto(jogador) + dado.GetLadoOposto(computador);
+            somaOpostos += soma;
 
-            if (escolha == resultado)
+            int limite = limites[$"D{dado.Lados}"];
+            if (somaOpostos >= limite)
             {
-                await DisplayAlert("Parabéns", "Você acertou!", "Ok");
-
-            }
-            else
-            {
-                await DisplayAlert("Tente novamente", $"Você escolheu {escolha}, mas saiu {ResultadoY}.", "Ok");
-            }
-        }
-
-        private async void RollButtonX_Clicked(object sender, EventArgs e)
-        {
-            if (SelecaoPicker.SelectedIndex == -1)
-            {
-                await DisplayAlert("Aviso", "Escolha um número antes de rolar!", "Ok");
-                return;
+                RolarButton.IsEnabled = false;
+                status += $"\nTentativas máximas utilizadas. (Limite: {limite})";
             }
 
-            await AnimarDado();
-
-            int resultado = meuDado.Jogar();
-            dadoImagem.Source = meuDado.GetImagem(resultado);
-
-            int escolha = int.Parse(SelecaoPicker.SelectedItem.ToString());
-
-            if (escolha >= 4)
-            {
-                await DisplayAlert("Parabéns", "Você acertou!", "Ok");
-
-            }
-            else
-            {
-                await DisplayAlert("Tente novamente", $"Você escolheu {escolha}, mas saiu {resultado}.", "Ok");
-            }
-        }
-
-        private async Task AnimarDado()
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                int numeroAleatorio = new Random().Next(1, 7);
-                dadoImagem.Source = $"dado{numeroAleatorio}.png";
-                await Task.Delay(80);
-            }
+            ResultadoLabel.Text = $"Seu número: {jogador} - Computador: {computador}";
+            StatusLabel.Text = status;
+            VitoriasLabel.Text = $"Vitórias: {vitorias}";
+            SequenciaLabel.Text = $"Sequência: {sequencia}";
+            SomaOpostosLabel.Text = $"Soma dos lados opostos: {somaOpostos}/{limite}";
         }
     }
 }
